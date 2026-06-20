@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "RecruiterBlockBE",
+  "version": "1.0",
+
+  "description": "Blocks vacancies posted by these pesky recruiting companies for the most popular job posting website(s) in Belgium.",
+
+  "icons": {
+    "48": "icon.svg",
+    "96": "icon.svg"
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "recruiter_block_be@mozilla.org",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.vdab.be/vindeenjob/vacatures*"],
+      "js": ["script.js"]
+    }
+  ]
+}
