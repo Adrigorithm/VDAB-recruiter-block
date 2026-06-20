@@ -56,6 +56,7 @@ const vdabRecruiterNames = [
 const vdabRecruiterLogoAlts = [
   // Add new logo alt texts here
 ];
+```
 
 ---
 
