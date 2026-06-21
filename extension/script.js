@@ -1,5 +1,4 @@
-if (location.hostname === "www.vdab.be")
-  document.addEventListener("DOMContentLoaded", vdabHandle());
+document.addEventListener("DOMContentLoaded", vdabHandle());
 
 function vdabPrioritiseVacancies() {
   if (vdabFetchLiveVacanciesUl().children.length === 0) {
@@ -82,21 +81,29 @@ function vdabHandle() {
   }, 500);
 }
 
-function isVdabRecruiterName(recruiterNameStrong) {
-  return vdabRecruiterNames.some(
+function isVdabRecruiterName(firstIteration, recruiterNameStrong) {
+  return vdabRecruiterNames(firstIteration).some(
     (name) => name === recruiterNameStrong.textContent,
   );
 }
 
-function isVdabRecruiterLogo(logoImg) {
-  return vdabRecruiterLogoAlts.some((alt) => alt === logoImg.alt);
+function isVdabRecruiterLogo(firstIteration, logoImg) {
+  return vdabRecruiterLogoAlts(firstIteration).some(
+    (alt) => alt === logoImg.alt,
+  );
 }
 
 function vdabApplyLowPriorityVacancy(vacancyLi) {
+  if (vdabRecruiterBlockMode === 2) {
+    vacancyLi.remove();
+    return;
+  }
+
   vdabFetchLiveVacanciesUl().children[
     vdabFetchLiveVacanciesUl().children.length - 1
   ].after(vacancyLi);
-  vacancyLi.style.opacity = 0.25;
+
+  if (vdabRecruiterBlockMode === 1) vacancyLi.style.opacity = 0.25;
 }
 
 function vdabWaitForVacancyListStability(callback, stabilityThresholdMs) {
@@ -127,7 +134,54 @@ function vdabFetchLiveVacanciesUl() {
   return document.getElementsByClassName("c-vacature-container")[0];
 }
 
-const vdabRecruiterNames = [
+// This section allows recruiter job postings to be hidden or removed the way you want it through the extension popup.
+let vdabRecruiterBlockMode = () => {
+  let mode = Number.parseInt(localStorage.getItem("vdab-recruiter-block_mode"));
+
+  if (!mode || mode < 0 || mode > 2)
+    localStorage.setItem(
+      "vdab-recruiter-block_mode",
+      vdabDefaultRecruiterBlockMode,
+    );
+  else return mode;
+
+  return vdabDefaultRecruiterBlockMode;
+};
+
+let vdabRecruiterLogoAlts = () => {
+  let alts = localStorage.getItem("vdab-recruiter-block_recruiterLogoAlts");
+
+  if (!alts)
+    localStorage.setItem(
+      "vdab-recruiter-block_recruiterLogoAlts",
+      vdabDefaultRecruiterLogoAlts,
+    );
+  else return alts.split("¬");
+
+  return vdabDefaultRecruiterLogoAlts;
+};
+
+let vdabRecruiterNames = () => {
+  let names = localStorage.getItem("vdab-recruiter-block_recruiterNames");
+
+  if (!names)
+    localStorage.setItem(
+      "vdab-recruiter-block_recruiterNames",
+      vdabDefaultRecruiterNames,
+    );
+  else return names.split("¬");
+
+  return vdabDefaultRecruiterNames;
+};
+
+/*
+  0 = Sort to bottom
+  1 = Sort to bottom and dim
+  2 = Remove :3
+*/
+const vdabDefaultRecruiterBlockMode = 1;
+
+const vdabDefaultRecruiterNames = [
   "Madison Recruitment",
   "Kingfisher Recruitment",
   "LGA IT",
@@ -140,7 +194,7 @@ const vdabRecruiterNames = [
   "JOB TALENT",
 ];
 
-const vdabRecruiterLogoAlts = [
+const vdabDefaultRecruiterLogoAlts = [
   "Logo Editx",
   "Logo LGA IT",
   "Logo ITZU",
