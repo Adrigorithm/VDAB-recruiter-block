@@ -72,9 +72,9 @@ removeRecruiterLogoAlt.addEventListener("click", () => {
 loadValues();
 
 function loadValues() {
-  let activeBlockMode = vdabRecruiterBlockMode;
-  let activeRecruiterNames = vdabRecruiterNames;
-  let activeRecruiterLogoAlts = vdabRecruiterLogoAlts;
+  let activeBlockMode = vdabRecruiterBlockMode();
+  let activeRecruiterNames = vdabRecruiterNames();
+  let activeRecruiterLogoAlts = vdabRecruiterLogoAlts();
 
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
     // Type coercion intended. Value from localStorage is a string, while form HTML is an integer.

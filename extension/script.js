@@ -15,10 +15,11 @@ function vdabPrioritiseVacancies() {
 
     // This Element does exist but doesn't have children when the vacancy doesn't have a logo.
     const logoDiv = vacancyLi.getElementsByClassName("c-vacature__logo")[0];
+
     if (logoDiv && logoDiv.style.display !== "none") {
       const logoImg = logoDiv.getElementsByTagName("img")[0];
 
-      if (logoImg && isVdabRecruiterLogo(logoImg)) {
+      if (logoImg && isVdabRecruiterLogoAlt(logoImg)) {
         vdabApplyLowPriorityVacancy(vacancyLi);
         continue;
       }
@@ -32,6 +33,7 @@ function vdabPrioritiseVacancies() {
       .getElementsByClassName("c-vacature-meta -location")[0]
       ?.getElementsByTagName("span")[0]
       ?.getElementsByTagName("strong")[0];
+
     if (recruiterNameStrong) {
       if (isVdabRecruiterName(recruiterNameStrong)) {
         vdabApplyLowPriorityVacancy(vacancyLi);
@@ -81,20 +83,20 @@ function vdabHandle() {
   }, 500);
 }
 
-function isVdabRecruiterName(firstIteration, recruiterNameStrong) {
-  return vdabRecruiterNames(firstIteration).some(
+function isVdabRecruiterName(recruiterNameStrong) {
+  return vdabRecruiterNames().some(
     (name) => name === recruiterNameStrong.textContent,
   );
 }
 
-function isVdabRecruiterLogo(firstIteration, logoImg) {
-  return vdabRecruiterLogoAlts(firstIteration).some(
-    (alt) => alt === logoImg.alt,
-  );
+function isVdabRecruiterLogoAlt(logoImg) {
+  return vdabRecruiterLogoAlts().some((alt) => alt === logoImg.alt);
 }
 
 function vdabApplyLowPriorityVacancy(vacancyLi) {
-  if (vdabRecruiterBlockMode === 2) {
+  const blockMode = vdabRecruiterBlockMode();
+
+  if (blockMode === 2) {
     vacancyLi.remove();
     return;
   }
@@ -103,13 +105,14 @@ function vdabApplyLowPriorityVacancy(vacancyLi) {
     vdabFetchLiveVacanciesUl().children.length - 1
   ].after(vacancyLi);
 
-  if (vdabRecruiterBlockMode === 1) vacancyLi.style.opacity = 0.25;
+  if (blockMode === 1) vacancyLi.style.opacity = 0.25;
 }
 
 function vdabWaitForVacancyListStability(callback, stabilityThresholdMs) {
   let stabilityPoller = setInterval(() => {
     let loading =
       vdabFetchLiveVacanciesUl().getElementsByClassName("has-loading");
+
     if (loading.length === 0) {
       clearInterval(stabilityPoller);
       callback();
@@ -154,7 +157,7 @@ let vdabRecruiterLogoAlts = () => {
   if (!alts)
     localStorage.setItem(
       "vdab-recruiter-block_recruiterLogoAlts",
-      vdabDefaultRecruiterLogoAlts,
+      vdabDefaultRecruiterLogoAlts.join("¬"),
     );
   else return alts.split("¬");
 
@@ -167,7 +170,7 @@ let vdabRecruiterNames = () => {
   if (!names)
     localStorage.setItem(
       "vdab-recruiter-block_recruiterNames",
-      vdabDefaultRecruiterNames,
+      vdabDefaultRecruiterNames.join("¬"),
     );
   else return names.split("¬");
 
