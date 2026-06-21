@@ -6,58 +6,86 @@
     </head>
 
     <body>
-        <fieldset>
-            <legend>Mode:</legend>
+        <fieldset class="column">
+            <legend class="padding-x">Mode</legend>
             <p>
                 This is used for the extension to decide what to do when a
                 vacancy is labeled as "made by a recruiting agency".
             </p>
 
-            <input type="radio" id="toBottom" name="mode" value="toButtom" />
-            <label for="toBottom">Push to bottom</label>
+            <div id="modeRadiosContainer" class="column width-fit">
+                <div>
+                    <input type="radio" id="toBottom" name="mode" value="0" />
+                    <label for="toBottom">Push to bottom</label>
+                </div>
 
-            <input
-                type="radio"
-                id="toBottomDim"
-                name="mode"
-                value="toButtomDim"
-            />
-            <label for="toBottom">Push to bottom + dim</label>
+                <div>
+                    <input
+                        type="radio"
+                        id="toBottomDim"
+                        name="mode"
+                        value="1"
+                    />
+                    <label for="toBottom">Push to bottom + dim</label>
+                </div>
 
-            <input type="radio" id="remove" name="mode" value="remove" />
-            <label for="toBottom">Remove</label>
+                <div>
+                    <input type="radio" id="remove" name="mode" value="2" />
+                    <label for="toBottom">Remove</label>
+                </div>
 
-            <button id="apply">Apply</button>
+                <button class="spacer-top" id="applyMode">Apply</button>
+            </div>
         </fieldset>
 
-        <fieldset>
-            <legend>Recruiter names:</legend>
+        <fieldset class="spacer-top">
+            <legend class="padding-x">Recruiter names</legend>
 
-            <select id="recruiterName">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-            </select>
+            <div class="column width-fit gap">
+                <div class="flex">
+                    <select class="grow" id="recruiterNames">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
 
-            <input id="selectedRecruiterName" type="text" />
+                    <button id="removeRecruiterName">Remove</button>
+                </div>
 
-            <button id="addRecruiterName">Add</button>
-            <button id="removeRecruiterName">Remove</button>
+                <div class="flex">
+                    <input
+                        class="padding-x grow"
+                        id="selectedRecruiterName"
+                        type="text"
+                    />
+                    <button id="addRecruiterName">Add</button>
+                </div>
+            </div>
         </fieldset>
 
-        <fieldset>
-            <legend>Recruiter logos:</legend>
+        <fieldset class="spacer-top">
+            <legend class="padding-x">Recruiter logo alts</legend>
 
-            <select id="recruiterLogo">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-            </select>
+            <div class="column width-fit gap">
+                <div class="flex">
+                    <select class="grow" id="recruiterLogoAlts">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
 
-            <input id="selectedRecruiterLogo" type="text" />
+                    <button id="removeRecruiterLogoAlt">Remove</button>
+                </div>
 
-            <button id="addRecruiterLogo">Add</button>
-            <button id="removeRecruiterLogo">Remove</button>
+                <div class="flex">
+                    <input
+                        class="padding-x grow"
+                        id="newRecruiterLogoAlt"
+                        type="text"
+                    />
+                    <button id="addRecruiterLogoAlt">Add</button>
+                </div>
+            </div>
         </fieldset>
 
         <script src="popup.js"></script>

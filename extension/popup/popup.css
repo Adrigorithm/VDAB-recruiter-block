@@ -1,0 +1,77 @@
+:root {
+    --bg-colour: oklch(0.75 0.111 280.91);
+    --dark-bg-colour: oklch(0.25 0.111 280.91);
+    --fg-colour: oklch(0.2 0 280.91);
+    --dark-fg-colour: oklch(0.8 0 280.91);
+}
+
+body {
+    background-color: var(--bg-colour);
+    color: var(--fg-colour);
+}
+
+button {
+    background-color: var(--dark-bg-colour);
+    color: var(--dark-fg-colour);
+    padding: 0.25rem;
+    border: none;
+    font-weight: bold;
+}
+
+input[type="text"],
+select {
+    border: var(--fg-colour) solid 1px;
+    background-color: transparent;
+    color: inherit;
+}
+
+.padding-x {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+legend {
+    font-weight: bold;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+.gap {
+    gap: 0.25rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+.width-fit {
+    width: fit-content;
+}
+
+.spacer-top {
+    margin-top: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--dark-bg-colour);
+        color: var(--dark-fg-colour);
+    }
+
+    button {
+        background-color: var(--bg-colour);
+        color: var(--fg-colour);
+    }
+
+    input[type="text"],
+    select {
+        border: var(--dark-fg-colour) solid 1px;
+    }
+}

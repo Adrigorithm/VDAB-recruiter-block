@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px">
     <style xmlns="http://www.w3.org/2000/svg">
-        path { fill: black; }
+        path { fill: oklch(0.2 0 280.91); }
+        svg { background-color: oklch(0.75 0.111 280.91); }
 
         @media (prefers-color-scheme: dark) {
-        path { fill: white; }
+            path { fill: oklch(0.8 0 280.91); }
+            svg { background-color: oklch(0.25 0.111 280.91); }
         }
     </style>
     <path
