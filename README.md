@@ -21,7 +21,7 @@ Please note that I bear no ill will towards recruiters personally, but rather to
 * **Chromium:** It is possible this extension works just fine in chromium based browsers but I will test this for myself later since I use Firefox. 
 * **Job Suggestions:** The job suggestions page includes a second vacancies list (made by AI (unfortunately))
 * **Automatically fetch recruitment agencies:** Manually editing a file can get tiring quickly. This may not be possible to automate but we'll have to see what is possible.
-* **Configurability:** An extension menu that allows you to configure what is to be done with the low priority job vacancies. A few options could be sort to bottom with or without dimming and maybe removing with a toggle button or entirely. 
+* **Configurability:** An extension menu that allows you to configure what is to be done with the low priority job vacancies. A few options could be sort to bottom with or without dimming and maybe removing with a toggle button or entirely. **(almost done)**
 
 ## ⚙️ How It Works
 
@@ -51,7 +51,7 @@ Search for this extension on the browser extension market place. If you're not s
 
 ## 🔧 Configuration
 
-To modify the list of blocked recruiters, open the script source and edit:
+To modify the list of blocked recruiters, make use of the **extension popup menu** (This is what opens when you click on the extension icon in the browser extension bar). You can if you wish also make a PR so everyone can block the recruiter! :). To do this edit the following `Arrays` in both `script.js` and `popup.js`.
 
 ```javascript
 const vdabRecruiterNames = [
