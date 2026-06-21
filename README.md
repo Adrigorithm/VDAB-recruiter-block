@@ -1,8 +1,12 @@
-# vdab-recruiter-block
+# CURRENT STATE
+
+**Do not use this yet.** It is still in development. When a release appears (here or in the browser extension marketplace) it will be an indication it is ready to use. 
+
+# VDAB-recruiter-block
 
 A lightweight browser userscript or extension that reorders job listings on the VDAB website (`www.vdab.be`) to de-prioritize vacancies posted by third-party recruitment agencies, bringing direct employer listings to the top.
 
-Please note that I bear no ill will towards recruiters personally, but rather to the work they do (if it's not a LLM doing the work for them). I made this because almost all recruitment agencies I've interacted with either don't respond at all or weeks later with "vacancy has already been filled - yeah no shit???". Additionally, I have stumbed upon many duplicates or already filled roles as well. In the rare instances I do get interviewed (for IT positions), they display no interest or knowledge in either the company they are hiring for or anything about IT in general. This is awful and makes the **FIRST** step in the hiring process a pointless social interaction where the best yapper wins.
+Please note that I bear no ill will towards recruiters personally, but rather to the work they do (if it's not a LLM doing the work for them). I made this because almost all recruitment agencies I've interacted with either don't respond at all or weeks later with "vacancy has already been filled - yeah no shit???". Additionally, I have stumbled upon many duplicates or already filled roles as well. In the rare instances I do get interviewed (for IT positions), they display no interest or knowledge in either the company they are hiring for or anything about IT in general. This is awful and makes the **FIRST** step in the hiring process an idiotic social yap contest where the best yapper and liar wins.
 
 ## 🚀 Features
 
@@ -14,6 +18,7 @@ Please note that I bear no ill will towards recruiters personally, but rather to
 
 ## 🚀 Planned Features
 
+* **Chromium:** It is possible this extension works just fine in chromium based browsers but I will test this for myself later since I use Firefox. 
 * **Job Suggestions:** The job suggestions page includes a second vacancies list (made by AI (unfortunately))
 * **Automatically fetch recruitment agencies:** Manually editing a file can get tiring quickly. This may not be possible to automate but we'll have to see what is possible.
 * **Configurability:** An extension menu that allows you to configure what is to be done with the low priority job vacancies. A few options could be sort to bottom with or without dimming and maybe removing with a toggle button or entirely. 

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="popup.css" />
+    </head>
+
+    <body>
+        <fieldset>
+            <legend>Mode:</legend>
+            <p>
+                This is used for the extension to decide what to do when a
+                vacancy is labeled as "made by a recruiting agency".
+            </p>
+
+            <input type="radio" id="toBottom" name="mode" value="toButtom" />
+            <label for="toBottom">Push to bottom</label>
+
+            <input
+                type="radio"
+                id="toBottomDim"
+                name="mode"
+                value="toButtomDim"
+            />
+            <label for="toBottom">Push to bottom + dim</label>
+
+            <input type="radio" id="remove" name="mode" value="remove" />
+            <label for="toBottom">Remove</label>
+
+            <button id="apply">Apply</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Recruiter names:</legend>
+
+            <select id="recruiterName">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+
+            <input id="selectedRecruiterName" type="text" />
+
+            <button id="addRecruiterName">Add</button>
+            <button id="removeRecruiterName">Remove</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Recruiter logos:</legend>
+
+            <select id="recruiterLogo">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+
+            <input id="selectedRecruiterLogo" type="text" />
+
+            <button id="addRecruiterLogo">Add</button>
+            <button id="removeRecruiterLogo">Remove</button>
+        </fieldset>
+
+        <script src="popup.js"></script>
+    </body>
+</html>
