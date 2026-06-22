@@ -10,7 +10,12 @@ let vdabRecruiterLogoAlts = undefined;
 
 document.addEventListener("DOMContentLoaded", vdabHandle());
 browser.runtime.onMessage.addListener((message) => {
-  if (message.type === mode) return;
+  if (message.command === "changeBlockMode")
+    setVdabRecruiterBlockMode(message.data);
+  else if (message.command === "handleRecruiterName")
+    if (message.mode === "+") addVdabRecruiterName(message.data);
+    else if (message.mode === "-") remove;
+    else if (message.command === "handleRecruiterLogoAlt") return;
 });
 
 function vdabPrioritiseVacancies() {
@@ -216,35 +221,68 @@ function addVdabRecruiterName(name) {
   vdabRecruiterNames.push(name);
 }
 
+function removeVdabRecruiterName(name) {
+  removeValueFromListAndLocalStorageStringList(
+    name,
+    vdabRecruiterNames,
+    VdabDefaultRecruiterNames,
+    LocalStorage.Names,
+  );
+}
+
+function removeVdabRecruiterLogoAlt(alt) {
+  removeValueFromListAndLocalStorageStringList(
+    alt,
+    vdabRecruiterLogoAlts,
+    VdabDefaultRecruiterLogoAlts,
+    LocalStorage.LogoAlts,
+  );
+}
+
+/**
+ * Removes a value from a list and localStorage list unless it is found in the blacklist provided.
+ * @param {string} value Value to remove.
+ * @param {*} list List from which the value should be removed.
+ * @param {*} blacklist Prevent `value` from being removed if it is therein.
+ * @param {*} key Key used to remove it from the `value` from `localStorage` list as well.
+ */
+function removeValueFromListAndLocalStorageStringList(
+  value,
+  list,
+  blacklist,
+  key,
+) {
+  let index = 0;
+
+  while (index < list.length) {
+    if (list[index] === value && !blacklist.includes(value)) {
+      removeSubStringFromLocalStorageStringList(value, key);
+      list.splice(index, 1);
+
+      break;
+    }
+
+    index++;
+  }
+}
+
 function addValueToLocalStorageStringList(string, key) {
   let entry = localStorage.getItem(key);
   localStorage.setItem(key, `${entry}${StringListSeparator}${string}`);
 }
 
-function indexOfStringInLocalStorage(string, key) {
-  let entry = localStorage.getItem(key);
-  return entry.search(string);
-}
-
 function isInLocalStorageStringList(string, key) {
-  return localStorage.getItem(key).search(string) !== -1;
+  return localStorage.getItem(key).includes(string);
 }
 
 function removeSubStringFromLocalStorageStringList(
   stringToRemove,
   localStorageKey,
 ) {
-  let localStorageEntryIndex = indexOfStringInLocalStorage(
-    stringToRemove,
-    localStorageKey,
-  );
-  let charsPrefixxed = 0;
+  let localStorageEntry = localStorage.getItem(localStorageKey);
 
-  // If not the first character, this means there's another entry before it, and we have to include the separation character
-  if (localStorageEntryIndex > 0) {
-    localStorageEntryIndex--;
-    charsPrefixxed = 1;
-  }
+  // -1 is needed to include the separation character
+  let localStorageEntryIndex = localStorageEntry.search(stringToRemove) - 1;
 
   localStorage.setItem(
     localStorageKey,
@@ -252,7 +290,7 @@ function removeSubStringFromLocalStorageStringList(
       .substring(0, localStorageEntryIndex)
       .concat(
         localStorageEntry.substring(
-          localStorageEntryIndex + stringToRemove.length + charsPrefixxed,
+          localStorageEntryIndex + stringToRemove.length,
         ),
       ),
   );
