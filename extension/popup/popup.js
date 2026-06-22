@@ -1,3 +1,35 @@
+/*
+  0 = Sort to bottom
+  1 = Sort to bottom and dim
+  2 = Remove :3
+*/
+const vdabPopupDefaultRecruiterBlockMode = 1;
+
+const vdabPopupDefaultRecruiterNames = [
+  "Madison Recruitment",
+  "Kingfisher Recruitment",
+  "LGA IT",
+  "ITZU Jobs",
+  "ITZU",
+  "Passion Works!",
+  "Vivaldis Interim",
+  "AGO Jobs & HR",
+  "UNIQUE",
+  "JOB TALENT",
+];
+
+const vdabPopupDefaultRecruiterLogoAlts = [
+  "Logo Editx",
+  "Logo LGA IT",
+  "Logo ITZU",
+  "Logo Vivaldis Interim",
+  "Logo Jobat",
+  "Logo AGO Jobs & HR",
+  "Logo Tempo-Team",
+  "Logo Unique",
+  "Logo Job Talent",
+];
+
 applyMode.addEventListener("click", () => {
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
     if (radio.checked) {
@@ -72,9 +104,9 @@ removeRecruiterLogoAlt.addEventListener("click", () => {
 loadValues();
 
 function loadValues() {
-  let activeBlockMode = vdabRecruiterBlockMode();
-  let activeRecruiterNames = vdabRecruiterNames();
-  let activeRecruiterLogoAlts = vdabRecruiterLogoAlts();
+  let activeBlockMode = vdabPopupRecruiterBlockMode();
+  let activeRecruiterNames = vdabPopupRecruiterNames();
+  let activeRecruiterLogoAlts = vdabPopupRecruiterLogoAlts();
 
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
     // Type coercion intended. Value from localStorage is a string, while form HTML is an integer.
@@ -126,73 +158,45 @@ function addOptionToSelect(optionValue, optionInnerText, selectElement) {
 }
 
 // This section allows recruiter job postings to be hidden or removed the way you want it through the extension popup.
-let vdabRecruiterBlockMode = () => {
+function vdabPopupRecruiterBlockMode() {
   let mode = Number.parseInt(localStorage.getItem("vdab-recruiter-block_mode"));
 
   if (!mode || mode < 0 || mode > 2)
     localStorage.setItem(
       "vdab-recruiter-block_mode",
-      vdabDefaultRecruiterBlockMode,
+      vdabPopupDefaultRecruiterBlockMode,
     );
   else return mode;
 
-  return vdabDefaultRecruiterBlockMode;
-};
+  return vdabPopupDefaultRecruiterBlockMode;
+}
 
-let vdabRecruiterLogoAlts = () => {
+function vdabPopupRecruiterLogoAlts() {
   let alts = localStorage.getItem("vdab-recruiter-block_recruiterLogoAlts");
 
   if (!alts)
     localStorage.setItem(
       "vdab-recruiter-block_recruiterLogoAlts",
-      vdabDefaultRecruiterLogoAlts,
+      vdabPopupDefaultRecruiterLogoAlts.join("¬"),
     );
   else return alts.split("¬");
 
-  return vdabDefaultRecruiterLogoAlts;
-};
+  return vdabPopupDefaultRecruiterLogoAlts;
+}
 
-let vdabRecruiterNames = () => {
+function vdabPopupRecruiterNames() {
   let names = localStorage.getItem("vdab-recruiter-block_recruiterNames");
 
   if (!names)
     localStorage.setItem(
       "vdab-recruiter-block_recruiterNames",
-      vdabDefaultRecruiterNames,
+      vdabPopupDefaultRecruiterNames.join("¬"),
     );
   else return names.split("¬");
 
-  return vdabDefaultRecruiterNames;
-};
+  return vdabPopupDefaultRecruiterNames;
+}
 
-/*
-  0 = Sort to bottom
-  1 = Sort to bottom and dim
-  2 = Remove :3
-*/
-const vdabDefaultRecruiterBlockMode = 1;
-
-const vdabDefaultRecruiterNames = [
-  "Madison Recruitment",
-  "Kingfisher Recruitment",
-  "LGA IT",
-  "ITZU Jobs",
-  "ITZU",
-  "Passion Works!",
-  "Vivaldis Interim",
-  "AGO Jobs & HR",
-  "UNIQUE",
-  "JOB TALENT",
-];
-
-const vdabDefaultRecruiterLogoAlts = [
-  "Logo Editx",
-  "Logo LGA IT",
-  "Logo ITZU",
-  "Logo Vivaldis Interim",
-  "Logo Jobat",
-  "Logo AGO Jobs & HR",
-  "Logo Tempo-Team",
-  "Logo Unique",
-  "Logo Job Talent",
-];
+async function sendData(tab) {
+  await browser.tabs.sendMessage(tab.id, {});
+}

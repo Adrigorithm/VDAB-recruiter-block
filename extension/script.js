@@ -1,4 +1,17 @@
+/*
+  0 = Sort to bottom
+  1 = Sort to bottom and dim
+  2 = Remove :3
+*/
+let vdabRecruiterBlockMode = undefined;
+
+let vdabRecruiterNames = undefined;
+let vdabRecruiterLogoAlts = undefined;
+
 document.addEventListener("DOMContentLoaded", vdabHandle());
+browser.runtime.onMessage.addListener((message) => {
+  if (message.type === mode) return;
+});
 
 function vdabPrioritiseVacancies() {
   if (vdabFetchLiveVacanciesUl().children.length === 0) {
@@ -54,9 +67,55 @@ function vdabPrioritiseVacancies() {
     .setAttribute("rb-sorted", true);
 }
 
-function vdabHandle() {
-  // Drupal websites are horrible. We need to poll until a specific element exists first.
+/**
+ * Initialises application critical variables from `localStorage`, falling back to default values.
+ */
+function loadDefaults() {
+  vdabRecruiterBlockMode = localStorage.getItem(LocalStorage.BlockMode);
+  vdabRecruiterNames = localStorage.getItem(LocalStorage.Names);
+  vdabRecruiterLogoAlts = localStorage.getItem(LocalStorage.LogoAlts);
 
+  const finalValues = resetLocalStorageDefaults(
+    vdabRecruiterBlockMode === null,
+    vdabRecruiterNames === null,
+    vdabRecruiterLogoAlts === null,
+  );
+
+  vdabRecruiterBlockMode = finalValues.BlockMode;
+  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
+  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
+}
+
+/**
+ * Resets the specified values (whose parameters are `true`) in localStorage.
+ * @param {boolean} blockMode
+ * @param {boolean} names
+ * @param {boolean} logoAlts
+ * @returns The (resetted) parameters.
+ */
+function resetLocalStorageDefaults(blockMode, names, logoAlts) {
+  if (blockMode) {
+    localStorage.setItem(LocalStorage.BlockMode, VdabDefaultRecruiterBlockMode);
+    blockMode = VdabDefaultRecruiterBlockMode;
+  }
+
+  if (names) {
+    localStorage.setItem(LocalStorage.Names, VdabDefaultRecruiterNames);
+    names = VdabDefaultRecruiterNames;
+  }
+
+  if (logoAlts) {
+    localStorage.setItem(LocalStorage.LogoAlts, VdabDefaultRecruiterLogoAlts);
+    logoAlts = VdabDefaultRecruiterLogoAlts;
+  }
+
+  return { BlockMode: blockMode, Names: names, LogoAlts: logoAlts };
+}
+
+function vdabHandle() {
+  loadDefaults();
+
+  // Drupal websites are horrible. We need to poll until a specific element exists first.
   let vacanciesUl = undefined;
   let pollingAttempt = 0;
   let poller = setInterval(() => {
@@ -84,19 +143,17 @@ function vdabHandle() {
 }
 
 function isVdabRecruiterName(recruiterNameStrong) {
-  return vdabRecruiterNames().some(
+  return vdabRecruiterNames.some(
     (name) => name === recruiterNameStrong.textContent,
   );
 }
 
 function isVdabRecruiterLogoAlt(logoImg) {
-  return vdabRecruiterLogoAlts().some((alt) => alt === logoImg.alt);
+  return vdabRecruiterLogoAlts.some((alt) => alt === logoImg.alt);
 }
 
 function vdabApplyLowPriorityVacancy(vacancyLi) {
-  const blockMode = vdabRecruiterBlockMode();
-
-  if (blockMode === 2) {
+  if (vdabRecruiterBlockMode === 2) {
     vacancyLi.remove();
     return;
   }
@@ -105,7 +162,7 @@ function vdabApplyLowPriorityVacancy(vacancyLi) {
     vdabFetchLiveVacanciesUl().children.length - 1
   ].after(vacancyLi);
 
-  if (blockMode === 1) vacancyLi.style.opacity = 0.25;
+  if (vdabRecruiterBlockMode === 1) vacancyLi.style.opacity = 0.25;
 }
 
 function vdabWaitForVacancyListStability(callback, stabilityThresholdMs) {
@@ -137,74 +194,80 @@ function vdabFetchLiveVacanciesUl() {
   return document.getElementsByClassName("c-vacature-container")[0];
 }
 
-// This section allows recruiter job postings to be hidden or removed the way you want it through the extension popup.
-let vdabRecruiterBlockMode = () => {
-  let mode = Number.parseInt(localStorage.getItem("vdab-recruiter-block_mode"));
+// Since this comes from the popup, invalid values should never happen.
+function setVdabRecruiterBlockMode(mode) {
+  localStorage.setItem(LocalStorage.BlockMode, mode);
+  vdabRecruiterBlockMode = mode;
+}
 
-  if (!mode || mode < 0 || mode > 2)
-    localStorage.setItem(
-      "vdab-recruiter-block_mode",
-      vdabDefaultRecruiterBlockMode,
-    );
-  else return mode;
+// Doesn't check for whitespace (popup does this), it does however check if it is not already present in localStorage.
+function addVdabRecruiterLogoAlt(alt) {
+  if (isInLocalStorageStringList(alt, LocalStorage.LogoAlts)) return;
 
-  return vdabDefaultRecruiterBlockMode;
+  addValueToLocalStorageStringList(alt, LocalStorage.LogoAlts);
+  vdabRecruiterLogoAlts.push(alt);
+}
+
+// Doesn't check for whitespace (popup does this), it does however check if it is not already present in localStorage.
+function addVdabRecruiterName(name) {
+  if (isInLocalStorageStringList(name, LocalStorage.Names)) return;
+
+  addValueToLocalStorageStringList(name, LocalStorage.Names);
+  vdabRecruiterNames.push(name);
+}
+
+function addValueToLocalStorageStringList(string, key) {
+  let entry = localStorage.getItem(key);
+  localStorage.setItem(key, `${entry}${StringListSeparator}${string}`);
+}
+
+function indexOfStringInLocalStorage(string, key) {
+  let entry = localStorage.getItem(key);
+  return entry.search(string);
+}
+
+function isInLocalStorageStringList(string, key) {
+  return localStorage.getItem(key).search(string) !== -1;
+}
+
+function removeSubStringFromLocalStorageStringList(
+  stringToRemove,
+  localStorageKey,
+) {
+  let localStorageEntryIndex = indexOfStringInLocalStorage(
+    stringToRemove,
+    localStorageKey,
+  );
+  let charsPrefixxed = 0;
+
+  // If not the first character, this means there's another entry before it, and we have to include the separation character
+  if (localStorageEntryIndex > 0) {
+    localStorageEntryIndex--;
+    charsPrefixxed = 1;
+  }
+
+  localStorage.setItem(
+    localStorageKey,
+    localStorageEntry
+      .substring(0, localStorageEntryIndex)
+      .concat(
+        localStorageEntry.substring(
+          localStorageEntryIndex + stringToRemove.length + charsPrefixxed,
+        ),
+      ),
+  );
+}
+
+const VdabDefaultRecruiterBlockMode = 1;
+const VdabDefaultRecruiterNames =
+  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT";
+const VdabDefaultRecruiterLogoAlts =
+  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent";
+
+const LocalStorage = {
+  BlockMode: "vdab-recruiter-block_mode",
+  Names: "vdab-recruiter-block_recruiterNames",
+  LogoAlts: "vdab-recruiter-block_recruiterLogoAlts",
 };
 
-let vdabRecruiterLogoAlts = () => {
-  let alts = localStorage.getItem("vdab-recruiter-block_recruiterLogoAlts");
-
-  if (!alts)
-    localStorage.setItem(
-      "vdab-recruiter-block_recruiterLogoAlts",
-      vdabDefaultRecruiterLogoAlts.join("¬"),
-    );
-  else return alts.split("¬");
-
-  return vdabDefaultRecruiterLogoAlts;
-};
-
-let vdabRecruiterNames = () => {
-  let names = localStorage.getItem("vdab-recruiter-block_recruiterNames");
-
-  if (!names)
-    localStorage.setItem(
-      "vdab-recruiter-block_recruiterNames",
-      vdabDefaultRecruiterNames.join("¬"),
-    );
-  else return names.split("¬");
-
-  return vdabDefaultRecruiterNames;
-};
-
-/*
-  0 = Sort to bottom
-  1 = Sort to bottom and dim
-  2 = Remove :3
-*/
-const vdabDefaultRecruiterBlockMode = 1;
-
-const vdabDefaultRecruiterNames = [
-  "Madison Recruitment",
-  "Kingfisher Recruitment",
-  "LGA IT",
-  "ITZU Jobs",
-  "ITZU",
-  "Passion Works!",
-  "Vivaldis Interim",
-  "AGO Jobs & HR",
-  "UNIQUE",
-  "JOB TALENT",
-];
-
-const vdabDefaultRecruiterLogoAlts = [
-  "Logo Editx",
-  "Logo LGA IT",
-  "Logo ITZU",
-  "Logo Vivaldis Interim",
-  "Logo Jobat",
-  "Logo AGO Jobs & HR",
-  "Logo Tempo-Team",
-  "Logo Unique",
-  "Logo Job Talent",
-];
+const StringListSeparator = "¬";
