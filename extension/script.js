@@ -205,18 +205,14 @@ function setVdabRecruiterBlockMode(mode) {
   vdabRecruiterBlockMode = mode;
 }
 
-// Doesn't check for whitespace (popup does this), it does however check if it is not already present in localStorage.
+// Doesn't check for whitespace or duplicates (popup does this).
 function addVdabRecruiterLogoAlt(alt) {
-  if (isInLocalStorageStringList(alt, LocalStorage.LogoAlts)) return;
-
   addValueToLocalStorageStringList(alt, LocalStorage.LogoAlts);
   vdabRecruiterLogoAlts.push(alt);
 }
 
-// Doesn't check for whitespace (popup does this), it does however check if it is not already present in localStorage.
+// Doesn't check for whitespace or duplicates (popup does this).
 function addVdabRecruiterName(name) {
-  if (isInLocalStorageStringList(name, LocalStorage.Names)) return;
-
   addValueToLocalStorageStringList(name, LocalStorage.Names);
   vdabRecruiterNames.push(name);
 }
