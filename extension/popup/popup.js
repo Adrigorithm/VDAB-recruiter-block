@@ -5,12 +5,16 @@ let vdabRecruiterLogoAlts = undefined;
 applyMode.addEventListener("click", async () => {
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
     if (radio.checked) {
+      let changed = isVdabRecruiterBlockModeChanged(radio.value);
+
+      if (!changed) return;
+
       try {
         const [tab] = await getBrowserTabAsync();
         await changeBlockModeAsync(tab, radio.value);
         setVdabRecruiterBlockMode(radio.value);
       } catch {
-        console.log("content script call failed.");
+        checkRadioButton(vdabRecruiterBlockMode);
       }
 
       break;
@@ -23,10 +27,34 @@ addRecruiterName.addEventListener("click", async () => {
 
   if (!name) return;
 
+  let isDuplicate = isVdabRecruiterNameDuplicate(name);
+
+  if (isDuplicate) return;
+
   try {
     const [tab] = await getBrowserTabAsync();
     await handleRecruiterNameAsync(tab, name, "+");
-    addOptionToSelect(name, name, recruiterNames);
+    addVdabRecruiterName(name);
+    addOptionToSelect(name, name, false);
+  } catch {
+    console.log("content script call failed.");
+  }
+});
+
+addRecruiterLogoAlt.addEventListener("click", async () => {
+  let logoAlt = newRecruiterLogoAlt.value.trim();
+
+  if (!logoAlt) return;
+
+  let isDuplicate = isVdabRecruiterLogoAltDuplicate(logoAlt);
+
+  if (isDuplicate) return;
+
+  try {
+    const [tab] = await getBrowserTabAsync();
+    await handleRecruiterLogoAltAsync(tab, logoAlt, "+");
+    addVdabRecruiterLogoAlt(logoAlt);
+    addOptionToSelect(logoAlt, logoAlt, false);
   } catch {
     console.log("content script call failed.");
   }
@@ -39,20 +67,7 @@ removeRecruiterName.addEventListener("click", async () => {
     const [tab] = await getBrowserTabAsync();
     await handleRecruiterNameAsync(tab, name, "-");
     recruiterNames.item(recruiterNames.selectedIndex).remove();
-  } catch {
-    console.log("content script call failed.");
-  }
-});
-
-addRecruiterLogoAlt.addEventListener("click", async () => {
-  let logoAlt = newRecruiterLogoAlt.value.trim();
-
-  if (!logoAlt) return;
-
-  try {
-    const [tab] = await getBrowserTabAsync();
-    await handleRecruiterLogoAltAsync(tab, logoAlt, "+");
-    addOptionToSelect(logoAlt, logoAlt, recruiterLogoAlts);
+    removeValueFromListAndLocalStorageStringList(name, vdabRecruiterNames, key);
   } catch {
     console.log("content script call failed.");
   }
@@ -69,6 +84,20 @@ removeRecruiterLogoAlt.addEventListener("click", async () => {
     console.log("content script call failed.");
   }
 });
+
+/**
+ * Checks a specific radio button.
+ * @param {string | number} mode A string or integer representing the radio button by value.
+ */
+function checkRadioButton(mode) {
+  for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
+    // Type coercion intended. Value from localStorage is a string, while form HTML is an integer.
+    if (radio.getAttribute("value") == mode) {
+      radio.setAttribute("checked", "");
+      break;
+    }
+  }
+}
 
 loadDefaults();
 
@@ -87,13 +116,9 @@ function loadDefaults() {
   vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
   vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
 
-  for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
-    // Type coercion intended. Value from localStorage is a string, while form HTML is an integer.
-    if (radio.getAttribute("value") == activeBlockMode)
-      radio.setAttribute("checked", "");
-  }
+  checkRadioButton(vdabRecruiterBlockMode);
 
-  activeRecruiterNames.forEach((name) => {
+  vdabRecruiterNames.forEach((name) => {
     addOptionToSelect(
       name,
       name,
@@ -102,7 +127,7 @@ function loadDefaults() {
     );
   });
 
-  activeRecruiterLogoAlts.forEach((alt) => {
+  vdabRecruiterLogoAlts.forEach((alt) => {
     addOptionToSelect(
       alt,
       alt,
@@ -183,25 +208,48 @@ async function handleRecruiterLogoAltAsync(tab, logoAlt, mode) {
   });
 }
 
+/**
+ * Checks whether `mode` is the same as the currently active mode.
+ * @param {string | number} mode The mode to be checked.
+ * @returns {boolean} A boolean indicating whether `mode` is changed.
+ */
+function isVdabRecruiterBlockModeChanged(mode) {
+  // Type coercion intended
+  return !vdabRecruiterBlockMode == mode;
+}
+
+/**
+ * Checks if `logoAlt` is not already present in localStorage. Doesn't check for whitespace (event handler does this).
+ * @param {string} logoAlt The logoAlt to be checked.
+ * @returns {boolean} A boolean indicating whether `logoAlt` is a duplicate.
+ */
+function isVdabRecruiterLogoAltDuplicate(logoAlt) {
+  return vdabRecruiterLogoAlts.some((l) => l === logoAlt);
+}
+
+/**
+ * Checks if `name` is not already present in localStorage. Doesn't check for whitespace (event handler does this).
+ * @param {string} name The name to be checked.
+ * @returns {boolean} A boolean indicating whether `name` is a duplicate.
+ */
+function isVdabRecruiterNameDuplicate(name) {
+  return vdabRecruiterNames.some((n) => n === name);
+}
+
+// Since this comes from the popup, invalid values should never happen.
 function setVdabRecruiterBlockMode(mode) {
   localStorage.setItem(LocalStorage.BlockMode, mode);
   vdabRecruiterBlockMode = mode;
 }
 
-// Doesn't check for whitespace (popup does this), it does however check if it is not already present in localStorage.
-function addVdabRecruiterLogoAlt(alt) {
-  if (isInLocalStorageStringList(alt, LocalStorage.LogoAlts)) return;
-
-  addValueToLocalStorageStringList(alt, LocalStorage.LogoAlts);
-  vdabRecruiterLogoAlts.push(alt);
-}
-
-// Doesn't check for whitespace (popup does this), it does however check if it is not already present in localStorage.
 function addVdabRecruiterName(name) {
-  if (isInLocalStorageStringList(name, LocalStorage.Names)) return;
-
   addValueToLocalStorageStringList(name, LocalStorage.Names);
   vdabRecruiterNames.push(name);
+}
+
+function addVdabRecruiterLogoAlt(logoAlt) {
+  addValueToLocalStorageStringList(logoAlt, LocalStorage.LogoAlts);
+  vdabRecruiterLogoAlts.push(logoAlt);
 }
 
 function removeVdabRecruiterName(name) {
