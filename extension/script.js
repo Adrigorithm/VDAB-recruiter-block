@@ -12,10 +12,16 @@ document.addEventListener("DOMContentLoaded", vdabHandle());
 browser.runtime.onMessage.addListener((message) => {
   if (message.command === "changeBlockMode")
     setVdabRecruiterBlockMode(message.data);
-  else if (message.command === "handleRecruiterName")
+  else if (message.command === "handleRecruiterName") {
     if (message.mode === "+") addVdabRecruiterName(message.data);
-    else if (message.mode === "-") remove;
-    else if (message.command === "handleRecruiterLogoAlt") return;
+    else if (message.mode === "-") removeVdabRecruiterName(message.data);
+  } else if (message.command === "handleRecruiterLogoAlt") {
+    if (message.mode === "+") addVdabRecruiterLogoAlt(message.data);
+    else if (message.mode === "-") removeVdabRecruiterLogoAlt(message.data);
+  } else if (message.command === "hardReset") {
+    hardReset();
+    vdabPrioritiseVacancies();
+  }
 });
 
 function vdabPrioritiseVacancies() {
@@ -85,6 +91,14 @@ function loadDefaults() {
     vdabRecruiterNames === null,
     vdabRecruiterLogoAlts === null,
   );
+
+  vdabRecruiterBlockMode = finalValues.BlockMode;
+  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
+  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
+}
+
+function hardReset() {
+  const finalValues = resetLocalStorageDefaults(true, true, true);
 
   vdabRecruiterBlockMode = finalValues.BlockMode;
   vdabRecruiterNames = finalValues.Names.split(StringListSeparator);

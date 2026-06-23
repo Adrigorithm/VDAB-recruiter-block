@@ -2,6 +2,20 @@ let vdabRecruiterBlockMode = undefined;
 let vdabRecruiterNames = undefined;
 let vdabRecruiterLogoAlts = undefined;
 
+const VdabDefaultRecruiterBlockMode = 1;
+const VdabDefaultRecruiterNames =
+  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT";
+const VdabDefaultRecruiterLogoAlts =
+  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent";
+
+const LocalStorage = {
+  BlockMode: "vdab-recruiter-block_mode",
+  Names: "vdab-recruiter-block_recruiterNames",
+  LogoAlts: "vdab-recruiter-block_recruiterLogoAlts",
+};
+
+const StringListSeparator = "¬";
+
 applyMode.addEventListener("click", async () => {
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
     if (radio.checked) {
@@ -15,6 +29,7 @@ applyMode.addEventListener("click", async () => {
         setVdabRecruiterBlockMode(radio.value);
       } catch {
         checkRadioButton(vdabRecruiterBlockMode);
+        console.log("content script call failed.");
       }
 
       break;
@@ -85,6 +100,17 @@ removeRecruiterLogoAlt.addEventListener("click", async () => {
   }
 });
 
+hardReset.addEventListener("click", async () => {
+  try {
+    const [tab] = await getBrowserTabAsync();
+    await hardResetAsync(tab);
+    hardReset();
+    reload(true);
+  } catch {
+    console.log("content script call failed.");
+  }
+});
+
 /**
  * Checks a specific radio button.
  * @param {string | number} mode A string or integer representing the radio button by value.
@@ -116,13 +142,25 @@ function loadDefaults() {
   vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
   vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
 
+  reload();
+}
+
+function hardReset() {
+  const finalValues = resetLocalStorageDefaults(true, true, true);
+
+  vdabRecruiterBlockMode = finalValues.BlockMode;
+  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
+  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
+}
+
+function reload(onlyDefaults) {
   checkRadioButton(vdabRecruiterBlockMode);
 
   vdabRecruiterNames.forEach((name) => {
     addOptionToSelect(
       name,
       name,
-      VdabDefaultRecruiterNames.includes(name),
+      onlyDefaults ? true : VdabDefaultRecruiterNames.includes(name),
       recruiterNames,
     );
   });
@@ -131,7 +169,7 @@ function loadDefaults() {
     addOptionToSelect(
       alt,
       alt,
-      VdabDefaultRecruiterLogoAlts.includes(alt),
+      onlyDefaults ? true : VdabDefaultRecruiterLogoAlts.includes(alt),
       recruiterLogoAlts,
     );
   });
@@ -205,6 +243,12 @@ async function handleRecruiterLogoAltAsync(tab, logoAlt, mode) {
     command: "handleRecruiterLogoAlt",
     mode: mode,
     data: logoAlt,
+  });
+}
+
+async function hardResetAsync(tab) {
+  await browser.tabs.sendMessage(tab.id, {
+    command: "hardReset",
   });
 }
 
@@ -318,17 +362,3 @@ function removeSubStringFromLocalStorageStringList(
       ),
   );
 }
-
-const VdabDefaultRecruiterBlockMode = 1;
-const VdabDefaultRecruiterNames =
-  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT";
-const VdabDefaultRecruiterLogoAlts =
-  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent";
-
-const LocalStorage = {
-  BlockMode: "vdab-recruiter-block_mode",
-  Names: "vdab-recruiter-block_recruiterNames",
-  LogoAlts: "vdab-recruiter-block_recruiterLogoAlts",
-};
-
-const StringListSeparator = "¬";
