@@ -1,7 +1,3 @@
-let vdabRecruiterBlockMode = undefined;
-let vdabRecruiterNames = undefined;
-let vdabRecruiterLogoAlts = undefined;
-
 const VdabDefaultRecruiterBlockMode = 1;
 const VdabDefaultRecruiterNames =
   "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT";
@@ -15,6 +11,10 @@ const LocalStorage = {
 };
 
 const StringListSeparator = "¬";
+
+let vdabRecruiterBlockMode = undefined;
+let vdabRecruiterNames = undefined;
+let vdabRecruiterLogoAlts = undefined;
 
 applyMode.addEventListener("click", async () => {
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
@@ -133,9 +133,9 @@ function loadDefaults() {
   vdabRecruiterLogoAlts = localStorage.getItem(LocalStorage.LogoAlts);
 
   const finalValues = resetLocalStorageDefaults(
-    vdabRecruiterBlockMode === null,
-    vdabRecruiterNames === null,
-    vdabRecruiterLogoAlts === null,
+    vdabRecruiterBlockMode,
+    vdabRecruiterNames,
+    vdabRecruiterLogoAlts,
   );
 
   vdabRecruiterBlockMode = finalValues.BlockMode;
