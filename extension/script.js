@@ -25,14 +25,17 @@ let vdabRecruiterLogoAlts = undefined;
 document.addEventListener("DOMContentLoaded", vdabHandle());
 
 browser.runtime.onMessage.addListener((message) => {
-  if (message.command === "changeBlockMode")
+  if (message.command === "changeBlockMode") {
     setVdabRecruiterBlockMode(message.data);
-  else if (message.command === "handleRecruiterName") {
+    vdabPrioritiseVacancies();
+  } else if (message.command === "handleRecruiterName") {
     if (message.mode === "+") addVdabRecruiterName(message.data);
     else if (message.mode === "-") removeVdabRecruiterName(message.data);
+    vdabPrioritiseVacancies();
   } else if (message.command === "handleRecruiterLogoAlt") {
     if (message.mode === "+") addVdabRecruiterLogoAlt(message.data);
     else if (message.mode === "-") removeVdabRecruiterLogoAlt(message.data);
+    vdabPrioritiseVacancies();
   } else if (message.command === "hardReset") {
     hardReset();
     vdabPrioritiseVacancies();
@@ -192,16 +195,19 @@ function isVdabRecruiterLogoAlt(logoImg) {
 }
 
 function vdabApplyLowPriorityVacancy(vacancyLi) {
-  if (vdabRecruiterBlockMode == 2) {
-    vacancyLi.remove();
-    return;
-  }
-
   vdabFetchLiveVacanciesUl().children[
     vdabFetchLiveVacanciesUl().children.length - 1
   ].after(vacancyLi);
 
-  if (vdabRecruiterBlockMode == 1) vacancyLi.style.opacity = 0.25;
+  if (vdabRecruiterBlockMode == 0) {
+    vacancyLi.style.opacity = "";
+    vacancyLi.style.display = "";
+  } else if (vdabRecruiterBlockMode == 1) {
+    vacancyLi.style.opacity = 0.25;
+    vacancyLi.style.display = "";
+  } else if (vdabRecruiterBlockMode == 2) {
+    vacancyLi.style.display = "none";
+  }
 }
 
 function vdabWaitForVacancyListStability(callback) {
