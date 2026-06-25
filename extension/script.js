@@ -23,6 +23,7 @@ let vdabRecruiterNames = undefined;
 let vdabRecruiterLogoAlts = undefined;
 
 document.addEventListener("DOMContentLoaded", vdabHandle());
+
 browser.runtime.onMessage.addListener((message) => {
   if (message.command === "changeBlockMode")
     setVdabRecruiterBlockMode(message.data);
@@ -35,6 +36,8 @@ browser.runtime.onMessage.addListener((message) => {
   } else if (message.command === "hardReset") {
     hardReset();
     vdabPrioritiseVacancies();
+  } else if (message.command === "removeData") {
+    removeData();
   }
 });
 
@@ -100,23 +103,21 @@ function loadDefaults() {
   vdabRecruiterNames = localStorage.getItem(LocalStorage.Names);
   vdabRecruiterLogoAlts = localStorage.getItem(LocalStorage.LogoAlts);
 
-  const finalValues = resetLocalStorageDefaults(
-    vdabRecruiterBlockMode,
-    vdabRecruiterNames,
-    vdabRecruiterLogoAlts,
+  resetLocalStorageDefaults(
+    vdabRecruiterBlockMode === null,
+    vdabRecruiterNames === null,
+    vdabRecruiterLogoAlts === null,
   );
-
-  vdabRecruiterBlockMode = finalValues.BlockMode;
-  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
-  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
 }
 
 function hardReset() {
-  const finalValues = resetLocalStorageDefaults(true, true, true);
+  resetLocalStorageDefaults(true, true, true);
+}
 
-  vdabRecruiterBlockMode = finalValues.BlockMode;
-  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
-  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
+function removeData() {
+  localStorage.removeItem(LocalStorage.BlockMode);
+  localStorage.removeItem(LocalStorage.Names);
+  localStorage.removeItem(LocalStorage.LogoAlts);
 }
 
 /**
@@ -124,25 +125,27 @@ function hardReset() {
  * @param {boolean} blockMode
  * @param {boolean} names
  * @param {boolean} logoAlts
- * @returns The (resetted) parameters.
  */
 function resetLocalStorageDefaults(blockMode, names, logoAlts) {
   if (blockMode) {
     localStorage.setItem(LocalStorage.BlockMode, VdabDefaultRecruiterBlockMode);
-    blockMode = VdabDefaultRecruiterBlockMode;
+    vdabRecruiterBlockMode = VdabDefaultRecruiterBlockMode;
   }
 
   if (names) {
     localStorage.setItem(LocalStorage.Names, VdabDefaultRecruiterNames);
-    names = VdabDefaultRecruiterNames;
+    vdabRecruiterNames = VdabDefaultRecruiterNames.split(StringListSeparator);
+  } else {
+    vdabRecruiterNames = vdabRecruiterNames.split(StringListSeparator);
   }
 
   if (logoAlts) {
     localStorage.setItem(LocalStorage.LogoAlts, VdabDefaultRecruiterLogoAlts);
-    logoAlts = VdabDefaultRecruiterLogoAlts;
+    vdabRecruiterLogoAlts =
+      VdabDefaultRecruiterLogoAlts.split(StringListSeparator);
+  } else {
+    vdabRecruiterLogoAlts = vdabRecruiterLogoAlts.split(StringListSeparator);
   }
-
-  return { BlockMode: blockMode, Names: names, LogoAlts: logoAlts };
 }
 
 function vdabHandle() {
@@ -189,7 +192,7 @@ function isVdabRecruiterLogoAlt(logoImg) {
 }
 
 function vdabApplyLowPriorityVacancy(vacancyLi) {
-  if (vdabRecruiterBlockMode === 2) {
+  if (vdabRecruiterBlockMode == 2) {
     vacancyLi.remove();
     return;
   }
@@ -198,7 +201,7 @@ function vdabApplyLowPriorityVacancy(vacancyLi) {
     vdabFetchLiveVacanciesUl().children.length - 1
   ].after(vacancyLi);
 
-  if (vdabRecruiterBlockMode === 1) vacancyLi.style.opacity = 0.25;
+  if (vdabRecruiterBlockMode == 1) vacancyLi.style.opacity = 0.25;
 }
 
 function vdabWaitForVacancyListStability(callback) {

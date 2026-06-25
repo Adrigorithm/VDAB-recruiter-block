@@ -15,6 +15,7 @@ const StringListSeparator = "¬";
 let vdabRecruiterBlockMode = undefined;
 let vdabRecruiterNames = undefined;
 let vdabRecruiterLogoAlts = undefined;
+let errorHeight = -1;
 
 applyMode.addEventListener("click", async () => {
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
@@ -29,7 +30,7 @@ applyMode.addEventListener("click", async () => {
         setVdabRecruiterBlockMode(radio.value);
       } catch {
         checkRadioButton(vdabRecruiterBlockMode);
-        console.log("content script call failed.");
+        displayError("Couldn't find VDAB vacancies page.");
       }
 
       break;
@@ -50,9 +51,9 @@ addRecruiterName.addEventListener("click", async () => {
     const [tab] = await getBrowserTabAsync();
     await handleRecruiterNameAsync(tab, name, "+");
     addVdabRecruiterName(name);
-    addOptionToSelect(name, name, false);
+    addOptionToSelect(name, name, false, recruiterNames);
   } catch {
-    console.log("content script call failed.");
+    displayError("Couldn't find VDAB vacancies page.");
   }
 });
 
@@ -69,9 +70,9 @@ addRecruiterLogoAlt.addEventListener("click", async () => {
     const [tab] = await getBrowserTabAsync();
     await handleRecruiterLogoAltAsync(tab, logoAlt, "+");
     addVdabRecruiterLogoAlt(logoAlt);
-    addOptionToSelect(logoAlt, logoAlt, false);
+    addOptionToSelect(logoAlt, logoAlt, false, recruiterLogoAlts);
   } catch {
-    console.log("content script call failed.");
+    displayError("Couldn't find VDAB vacancies page.");
   }
 });
 
@@ -84,7 +85,7 @@ removeRecruiterName.addEventListener("click", async () => {
     recruiterNames.item(recruiterNames.selectedIndex).remove();
     removeValueFromListAndLocalStorageStringList(name, vdabRecruiterNames, key);
   } catch {
-    console.log("content script call failed.");
+    displayError("Couldn't find VDAB vacancies page.");
   }
 });
 
@@ -96,18 +97,28 @@ removeRecruiterLogoAlt.addEventListener("click", async () => {
     await handleRecruiterLogoAltAsync(tab, logoAlt, "-");
     recruiterLogoAlts.item(recruiterLogoAlts.selectedIndex).remove();
   } catch {
-    console.log("content script call failed.");
+    displayError("Couldn't find VDAB vacancies page.");
   }
 });
 
-hardReset.addEventListener("click", async () => {
+doHardReset.addEventListener("click", async () => {
   try {
     const [tab] = await getBrowserTabAsync();
     await hardResetAsync(tab);
     hardReset();
     reload(true);
   } catch {
-    console.log("content script call failed.");
+    displayError("Couldn't find VDAB vacancies page.");
+  }
+});
+
+doRemoveData.addEventListener("click", async () => {
+  try {
+    const [tab] = await getBrowserTabAsync();
+    await removeDataAsync(tab);
+    removeData();
+  } catch {
+    displayError("Couldn't find VDAB vacancies page.");
   }
 });
 
@@ -125,32 +136,45 @@ function checkRadioButton(mode) {
   }
 }
 
-loadDefaults();
+initialise();
 
-function loadDefaults() {
+function initialise() {
+  errorHeight = error.clientHeight;
+
+  hideError();
+
   vdabRecruiterBlockMode = localStorage.getItem(LocalStorage.BlockMode);
   vdabRecruiterNames = localStorage.getItem(LocalStorage.Names);
   vdabRecruiterLogoAlts = localStorage.getItem(LocalStorage.LogoAlts);
 
-  const finalValues = resetLocalStorageDefaults(
-    vdabRecruiterBlockMode,
-    vdabRecruiterNames,
-    vdabRecruiterLogoAlts,
+  resetLocalStorageDefaults(
+    vdabRecruiterBlockMode === null,
+    vdabRecruiterNames === null,
+    vdabRecruiterLogoAlts === null,
   );
-
-  vdabRecruiterBlockMode = finalValues.BlockMode;
-  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
-  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
 
   reload();
 }
 
-function hardReset() {
-  const finalValues = resetLocalStorageDefaults(true, true, true);
+function hideError() {
+  error.style.marginTop = `-${errorHeight}px`;
+}
 
-  vdabRecruiterBlockMode = finalValues.BlockMode;
-  vdabRecruiterNames = finalValues.Names.split(StringListSeparator);
-  vdabRecruiterLogoAlts = finalValues.LogoAlts.split(StringListSeparator);
+function displayError(errorMessage) {
+  error.innerHtml = errorMessage;
+  error.style.visibility = "visible";
+  error.style.marginTop = 0;
+  setTimeout(() => {
+    hideError();
+  }, 500);
+}
+
+function hardReset() {
+  resetLocalStorageDefaults(true, true, true);
+}
+
+function removeData() {
+  localStorage.clear();
 }
 
 function reload(onlyDefaults) {
@@ -180,25 +204,27 @@ function reload(onlyDefaults) {
  * @param {boolean} blockMode
  * @param {boolean} names
  * @param {boolean} logoAlts
- * @returns The (resetted) parameters.
  */
 function resetLocalStorageDefaults(blockMode, names, logoAlts) {
   if (blockMode) {
     localStorage.setItem(LocalStorage.BlockMode, VdabDefaultRecruiterBlockMode);
-    blockMode = VdabDefaultRecruiterBlockMode;
+    vdabRecruiterBlockMode = VdabDefaultRecruiterBlockMode;
   }
 
   if (names) {
     localStorage.setItem(LocalStorage.Names, VdabDefaultRecruiterNames);
-    names = VdabDefaultRecruiterNames;
+    vdabRecruiterNames = VdabDefaultRecruiterNames.split(StringListSeparator);
+  } else {
+    vdabRecruiterNames = vdabRecruiterNames.split(StringListSeparator);
   }
 
   if (logoAlts) {
     localStorage.setItem(LocalStorage.LogoAlts, VdabDefaultRecruiterLogoAlts);
-    logoAlts = VdabDefaultRecruiterLogoAlts;
+    vdabRecruiterLogoAlts =
+      VdabDefaultRecruiterLogoAlts.split(StringListSeparator);
+  } else {
+    vdabRecruiterLogoAlts = vdabRecruiterLogoAlts.split(StringListSeparator);
   }
-
-  return { BlockMode: blockMode, Names: names, LogoAlts: logoAlts };
 }
 
 function addOptionToSelect(
@@ -249,6 +275,12 @@ async function handleRecruiterLogoAltAsync(tab, logoAlt, mode) {
 async function hardResetAsync(tab) {
   await browser.tabs.sendMessage(tab.id, {
     command: "hardReset",
+  });
+}
+
+async function removeDataAsync(tab) {
+  await browser.tabs.sendMessage(tab.id, {
+    command: "removeData",
   });
 }
 

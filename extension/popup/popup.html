@@ -6,6 +6,8 @@
     </head>
 
     <body>
+        <div id="error"></div>
+
         <fieldset class="column">
             <legend class="padding-x">Mode</legend>
             <p>
@@ -51,7 +53,7 @@
                 <div class="flex">
                     <input
                         class="padding-x grow"
-                        id="selectedRecruiterName"
+                        id="newRecruiterName"
                         type="text"
                     />
                     <button id="addRecruiterName">Add</button>
@@ -81,7 +83,24 @@
         </fieldset>
 
         <div class="spacer-top">
-            <button id="hardReset">Reset extension</button>
+            <div class="column">
+                <button id="doHardReset">Reset extension</button>
+                <p>
+                    Use this when something in the extension breaks.<br />
+                    This will clear all custom settings.
+                </p>
+            </div>
+
+            <div class="column">
+                <button id="doRemoveData">Remove all local data</button>
+                <p>
+                    You shouldn't use this.<br />
+                    ... Unless you want to remove the extension and leave no
+                    trace. <br />
+                    If clicked by accident, this may break things<br />
+                    until "Reset extension" is clicked or page is reloaded.
+                </p>
+            </div>
         </div>
 
         <script src="popup.js"></script>

@@ -25,11 +25,6 @@ select {
     color: inherit;
 }
 
-.padding-x {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-}
-
 legend {
     font-weight: bold;
 }
@@ -37,6 +32,21 @@ legend {
 fieldset {
     margin-left: 0;
     margin-right: 0;
+}
+
+#error {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    background-color: rgba(255, 0, 0, 0.75);
+    padding: 0.25rem;
+    transition: margin-top 0.5s;
+    visibility: hidden;
+}
+
+.padding-x {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .column {
