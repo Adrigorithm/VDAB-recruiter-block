@@ -15,22 +15,48 @@ const StringListSeparator = "¬";
 let vdabRecruiterBlockMode = undefined;
 let vdabRecruiterNames = undefined;
 let vdabRecruiterLogoAlts = undefined;
-let errorHeight = -1;
+let messageHeight = -1;
+
+document.addEventListener("DOMContentLoaded", hideMessage());
 
 applyMode.addEventListener("click", async () => {
   for (const radio of modeRadiosContainer.getElementsByTagName("input")) {
     if (radio.checked) {
       let changed = isVdabRecruiterBlockModeChanged(radio.value);
-
       if (!changed) return;
-
       try {
         const [tab] = await getBrowserTabAsync();
-        await changeBlockModeAsync(tab, radio.value);
+
+        // Even though the previous call is awaited,
+        // apparently the browser may still not be ready.
+        // I have thank my clanker to thank for this one.
+        let ttl = 10;
+
+        let retrier = setInterval(async () => {
+          try {
+            await changeBlockModeAsync(tab, radio.value);
+            clearInterval(retrier);
+          } catch {
+            if (ttl === 1) {
+              clearInterval(retrier);
+              throw new Error();
+            } else ttl--;
+          }
+        }, 250);
+
         setVdabRecruiterBlockMode(radio.value);
+        displayMessage(
+          "rgba(0, 255, 0, 0.75)",
+          "black",
+          "Recruiter block mode changed.",
+        );
       } catch {
         checkRadioButton(vdabRecruiterBlockMode);
-        displayError("Couldn't find VDAB vacancies page.");
+        displayMessage(
+          "rgba(255, 0, 0, 0.75)",
+          "white",
+          "Couldn't find VDAB vacancies page.",
+        );
       }
 
       break;
@@ -52,8 +78,13 @@ addRecruiterName.addEventListener("click", async () => {
     await handleRecruiterNameAsync(tab, name, "+");
     addVdabRecruiterName(name);
     addOptionToSelect(name, name, false, recruiterNames);
+    displayMessage("rgba(0, 255, 0, 0.75)", "black", "Recruiter name added.");
   } catch {
-    displayError("Couldn't find VDAB vacancies page.");
+    displayMessage(
+      "rgba(255, 0, 0, 0.75)",
+      "white",
+      "Couldn't find VDAB vacancies page.",
+    );
   }
 });
 
@@ -71,8 +102,13 @@ addRecruiterLogoAlt.addEventListener("click", async () => {
     await handleRecruiterLogoAltAsync(tab, logoAlt, "+");
     addVdabRecruiterLogoAlt(logoAlt);
     addOptionToSelect(logoAlt, logoAlt, false, recruiterLogoAlts);
+    displayMessage("rgba(0, 255, 0, 0.75)", "black", "Recruiter logo added.");
   } catch {
-    displayError("Couldn't find VDAB vacancies page.");
+    displayMessage(
+      "rgba(255, 0, 0, 0.75)",
+      "white",
+      "Couldn't find VDAB vacancies page.",
+    );
   }
 });
 
@@ -84,8 +120,13 @@ removeRecruiterName.addEventListener("click", async () => {
     await handleRecruiterNameAsync(tab, name, "-");
     recruiterNames.item(recruiterNames.selectedIndex).remove();
     removeValueFromListAndLocalStorageStringList(name, vdabRecruiterNames, key);
+    displayMessage("rgba(0, 255, 0, 0.75)", "black", "Recruiter name removed.");
   } catch {
-    displayError("Couldn't find VDAB vacancies page.");
+    displayMessage(
+      "rgba(255, 0, 0, 0.75)",
+      "white",
+      "Couldn't find VDAB vacancies page.",
+    );
   }
 });
 
@@ -96,8 +137,13 @@ removeRecruiterLogoAlt.addEventListener("click", async () => {
     const [tab] = await getBrowserTabAsync();
     await handleRecruiterLogoAltAsync(tab, logoAlt, "-");
     recruiterLogoAlts.item(recruiterLogoAlts.selectedIndex).remove();
+    displayMessage("rgba(0, 255, 0, 0.75)", "black", "Recruiter logo removed.");
   } catch {
-    displayError("Couldn't find VDAB vacancies page.");
+    displayMessage(
+      "rgba(255, 0, 0, 0.75)",
+      "white",
+      "Couldn't find VDAB vacancies page.",
+    );
   }
 });
 
@@ -107,8 +153,17 @@ doHardReset.addEventListener("click", async () => {
     await hardResetAsync(tab);
     hardReset();
     reload(true);
+    displayMessage(
+      "rgba(0, 255, 0, 0.75)",
+      "black",
+      "Block mode, names and kogos were reset to defaults.",
+    );
   } catch {
-    displayError("Couldn't find VDAB vacancies page.");
+    displayMessage(
+      "rgba(255, 0, 0, 0.75)",
+      "white",
+      "Couldn't find VDAB vacancies page.",
+    );
   }
 });
 
@@ -117,8 +172,17 @@ doRemoveData.addEventListener("click", async () => {
     const [tab] = await getBrowserTabAsync();
     await removeDataAsync(tab);
     removeData();
+    displayMessage(
+      "rgba(0, 255, 0, 0.75)",
+      "black",
+      "Removed all local storage used by this extension.",
+    );
   } catch {
-    displayError("Couldn't find VDAB vacancies page.");
+    displayMessage(
+      "rgba(255, 0, 0, 0.75)",
+      "white",
+      "Couldn't find VDAB vacancies page.",
+    );
   }
 });
 
@@ -139,9 +203,7 @@ function checkRadioButton(mode) {
 initialise();
 
 function initialise() {
-  errorHeight = error.clientHeight;
-
-  hideError();
+  messageHeight = message.clientHeight;
 
   vdabRecruiterBlockMode = localStorage.getItem(LocalStorage.BlockMode);
   vdabRecruiterNames = localStorage.getItem(LocalStorage.Names);
@@ -156,17 +218,21 @@ function initialise() {
   reload();
 }
 
-function hideError() {
-  error.style.marginTop = `-${errorHeight}px`;
+function hideMessage() {
+  message.style.marginTop = `-${messageHeight}px`;
 }
 
-function displayError(errorMessage) {
-  error.innerHtml = errorMessage;
-  error.style.visibility = "visible";
-  error.style.marginTop = 0;
+function displayMessage(backgroundColour, colour, text) {
+  message.innerHTML = text;
+
+  message.style.color = colour;
+  message.style.backgroundColor = backgroundColour;
+  message.style.visibility = "visible";
+  message.style.marginTop = 0;
+
   setTimeout(() => {
-    hideError();
-  }, 500);
+    hideMessage();
+  }, 1000);
 }
 
 function hardReset() {
@@ -291,7 +357,7 @@ async function removeDataAsync(tab) {
  */
 function isVdabRecruiterBlockModeChanged(mode) {
   // Type coercion intended
-  return !vdabRecruiterBlockMode == mode;
+  return vdabRecruiterBlockMode != mode;
 }
 
 /**

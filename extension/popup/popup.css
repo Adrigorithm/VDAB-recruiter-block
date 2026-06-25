@@ -6,6 +6,9 @@
 }
 
 body {
+    margin: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
     background-color: var(--bg-colour);
     color: var(--fg-colour);
 }
@@ -34,11 +37,10 @@ fieldset {
     margin-right: 0;
 }
 
-#error {
-    position: absolute;
+#message {
+    position: fixed;
     width: 100%;
     text-align: center;
-    background-color: rgba(255, 0, 0, 0.75);
     padding: 0.25rem;
     transition: margin-top 0.5s;
     visibility: hidden;
