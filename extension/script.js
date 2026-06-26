@@ -1,8 +1,8 @@
 const VdabDefaultRecruiterBlockMode = 1;
 const VdabDefaultRecruiterNames =
-  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT¬Kwery";
+  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT¬Kwery¬Accent¬Passion Works!";
 const VdabDefaultRecruiterLogoAlts =
-  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent¬Logo ictjob¬Logo Kwery";
+  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent¬Logo ictjob¬Logo Kwery¬Logo Accent Construct";
 
 const LocalStorage = {
   BlockMode: "vdab-recruiter-block_mode",
@@ -21,6 +21,8 @@ let vdabRecruiterBlockMode = undefined;
 
 let vdabRecruiterNames = undefined;
 let vdabRecruiterLogoAlts = undefined;
+
+let logoClassname = "c-vacature-meta -location";
 
 document.addEventListener("DOMContentLoaded", vdabHandle());
 
@@ -44,8 +46,8 @@ browser.runtime.onMessage.addListener((message) => {
   }
 });
 
-function vdabPrioritiseVacancies() {
-  if (vdabFetchLiveVacanciesUl().children.length === 0) {
+function vdabPrioritiseVacancies(vacanciesListUlIndex) {
+  if (vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length === 0) {
     console.warn(
       "vdab-recruiter-block couldn't find any vacancies (no jobs? or did the website update?).",
     );
@@ -54,8 +56,13 @@ function vdabPrioritiseVacancies() {
 
   let index = 0;
 
-  for (let i = 0; i < vdabFetchLiveVacanciesUl().children.length; i++) {
-    const vacancyLi = vdabFetchLiveVacanciesUl().children.item(index);
+  for (
+    let i = 0;
+    i < vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length;
+    i++
+  ) {
+    const vacancyLi =
+      vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.item(index);
 
     // This Element does exist but doesn't have children when the vacancy doesn't have a logo.
     const logoDiv = vacancyLi.getElementsByClassName("c-vacature__logo")[0];
@@ -64,7 +71,7 @@ function vdabPrioritiseVacancies() {
       const logoImg = logoDiv.getElementsByTagName("img")[0];
 
       if (logoImg && isVdabRecruiterLogoAlt(logoImg)) {
-        vdabApplyLowPriorityVacancy(vacancyLi);
+        vdabApplyLowPriorityVacancy(vacanciesListUlIndex, vacancyLi);
         continue;
       }
     } else {
@@ -80,7 +87,7 @@ function vdabPrioritiseVacancies() {
 
     if (recruiterNameStrong) {
       if (isVdabRecruiterName(recruiterNameStrong)) {
-        vdabApplyLowPriorityVacancy(vacancyLi);
+        vdabApplyLowPriorityVacancy(vacanciesListUlIndex, vacancyLi);
         continue;
       }
     } else {
@@ -93,7 +100,7 @@ function vdabPrioritiseVacancies() {
   }
 
   // This attribute is used to indicate the list has changed (it will be removed if that's the case). This of course doesn't apply to the initial page load.
-  vdabFetchLiveVacanciesUl()
+  vdabFetchLiveVacanciesUl(vacanciesListUlIndex)
     .querySelector(["li:last-of-type"])
     .setAttribute("rb-sorted", true);
 }
@@ -152,10 +159,11 @@ function resetLocalStorageDefaults(blockMode, names, logoAlts) {
 }
 
 function vdabHandle() {
+  setPageSettings();
   loadDefaults();
 
   // Drupal websites are horrible. We need to poll until a specific element exists first.
-  let vacanciesUl = undefined;
+  let vacancyUls = undefined;
   let isBusy = false;
 
   setInterval(() => {
@@ -164,24 +172,30 @@ function vdabHandle() {
     isBusy = true;
 
     // Can be null when either no vacancy search happened or when the page wasn't loaded yet.
-    vacanciesUl = vdabFetchLiveVacanciesUl();
+    vacancyUls = vdabFetchLiveVacancyContainers();
 
-    if (!vacanciesUl) isBusy = false;
+    if (vacancyUls.length === 0) isBusy = false;
     else {
       // The vacancies container exists but the chilren elements are still being loaded in, so it is "unstable" and we must wait for it to be done.
       vdabWaitForVacancyListStability((success) => {
-        if (
-          success &&
-          vdabFetchLiveVacanciesUl()
-            .querySelector(["li:last-of-type"])
-            .getAttribute("rb-sorted") === null
-        )
-          vdabPrioritiseVacancies();
+        if (success) {
+          let unsortedVacanciesUlIndices = vdabFetchLiveUnsortedVacanciesUl();
+
+          if (unsortedVacanciesUlIndices.length > 0)
+            unsortedVacanciesUlIndices.forEach((index) =>
+              vdabPrioritiseVacancies(index),
+            );
+        }
 
         isBusy = false;
       });
     }
   }, 500);
+}
+
+function setPageSettings() {
+  if (location.pathname === "/vindeenjob/prive/suggesties")
+    logoClassname = "c-vacature-meta__location";
 }
 
 function isVdabRecruiterName(recruiterNameStrong) {
@@ -194,9 +208,9 @@ function isVdabRecruiterLogoAlt(logoImg) {
   return vdabRecruiterLogoAlts.some((alt) => alt === logoImg.alt);
 }
 
-function vdabApplyLowPriorityVacancy(vacancyLi) {
-  vdabFetchLiveVacanciesUl().children[
-    vdabFetchLiveVacanciesUl().children.length - 1
+function vdabApplyLowPriorityVacancy(vacanciesListUlIndex, vacancyLi) {
+  vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children[
+    vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length - 1
   ].after(vacancyLi);
 
   if (vdabRecruiterBlockMode == 0) {
@@ -218,26 +232,51 @@ function vdabWaitForVacancyListStability(callback) {
 
     isBusy = true;
 
-    let loading =
-      vdabFetchLiveVacanciesUl()?.getElementsByClassName("has-loading");
+    let vacancyContainers = vdabFetchLiveVacancyContainers();
 
-    // Sometimes, when the user changes the search parameters, it can happen that vdabFetchLiveVacanciesUl() returns null
-    // - mainly do to the interval taking 250ms.
-    // The caller is notified and will handle this event as well as it can.
-    if (!loading) {
-      clearInterval(stabilityPoller);
-      callback(false);
-    } else if (loading.length === 0) {
+    if (vacancyContainers.length > 0) {
+      for (let container of vacancyContainers)
+        if (container.getElementsByClassName("has-loading").length > 0) {
+          isBusy = false;
+
+          return;
+        }
+
       clearInterval(stabilityPoller);
       callback(true);
-    }
+    } else {
+      // Sometimes, when the user changes the search parameters, it can happen that vdabFetchLiveVacanciesUl() returns null
+      // - mainly due to the interval taking 250ms.
+      // The caller is notified and will handle this event as well as it can.
 
-    isBusy = false;
+      clearInterval(stabilityPoller);
+      callback(false);
+    }
   }, 250);
 }
 
-function vdabFetchLiveVacanciesUl() {
-  return document.getElementsByClassName("c-vacature-container")[0];
+function vdabFetchLiveVacancyContainers() {
+  return document.getElementsByClassName("c-vacature-container");
+}
+
+function vdabFetchLiveUnsortedVacanciesUl() {
+  let indices = [];
+  let counter = 0;
+
+  for (let ul of vdabFetchLiveVacancyContainers()) {
+    if (
+      ul.querySelector(["li:last-of-type"]).getAttribute("rb-sorted") === null
+    )
+      indices.push(counter);
+
+    counter++;
+  }
+
+  return indices;
+}
+
+function vdabFetchLiveVacanciesUl(index) {
+  return vdabFetchLiveVacancyContainers()[index];
 }
 
 // Since this comes from the popup, invalid values should never happen.

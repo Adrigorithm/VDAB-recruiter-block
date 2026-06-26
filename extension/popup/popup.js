@@ -1,8 +1,8 @@
 const VdabDefaultRecruiterBlockMode = 1;
 const VdabDefaultRecruiterNames =
-  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT¬Kwery";
+  "Madison Recruitment¬Kingfisher Recruitment¬LGA IT¬ITZU Jobs¬ITZU¬Passion Works!¬Vivaldis Interim¬AGO Jobs & HR¬UNIQUE¬JOB TALENT¬Kwery¬Accent¬Passion Works!";
 const VdabDefaultRecruiterLogoAlts =
-  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent¬Logo ictjob¬Logo Kwery";
+  "Logo Editx¬Logo LGA IT¬Logo ITZU¬Logo Vivaldis Interim¬Logo Jobat¬Logo AGO Jobs & HR¬Logo Tempo-Team¬Logo Unique¬Logo Job Talent¬Logo ictjob¬Logo Kwery¬Logo Accent Construct";
 
 const LocalStorage = {
   BlockMode: "vdab-recruiter-block_mode",

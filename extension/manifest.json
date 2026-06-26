@@ -29,7 +29,10 @@
 
   "content_scripts": [
     {
-      "matches": ["https://www.vdab.be/vindeenjob/vacatures?*"],
+      "matches": [
+        "https://www.vdab.be/vindeenjob/vacatures?*",
+        "https://www.vdab.be/vindeenjob/prive/suggesties*"
+      ],
       "js": ["script.js"]
     }
   ]
