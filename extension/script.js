@@ -22,7 +22,7 @@ let vdabRecruiterBlockMode = undefined;
 let vdabRecruiterNames = undefined;
 let vdabRecruiterLogoAlts = undefined;
 
-let logoClassname = "c-vacature-meta -location";
+let recruiterNameClassname = "c-vacature-meta -location";
 
 document.addEventListener("DOMContentLoaded", vdabHandle());
 
@@ -55,21 +55,30 @@ function vdabPrioritiseVacancies(vacanciesListUlIndex) {
   }
 
   let index = 0;
+  console.log(vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length);
 
   for (
     let i = 0;
     i < vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length;
     i++
   ) {
-    const vacancyLi =
-      vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.item(index);
+    const vacancyLi = isSuggestionsPage()
+      ? vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children[index]
+          .children[0]
+      : vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children[index];
+    vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.item(index);
+
+    // When isSuggestionsPage is true, there is sometimes a 'ghost' vacancy element because vdab web - sorry - drupal developers suck.
+    if (!vacancyLi) continue;
+    console.log(vacancyLi);
 
     // This Element does exist but doesn't have children when the vacancy doesn't have a logo.
     const logoDiv = vacancyLi.getElementsByClassName("c-vacature__logo")[0];
+    console.log(logoDiv);
 
     if (logoDiv && logoDiv.style.display !== "none") {
       const logoImg = logoDiv.getElementsByTagName("img")[0];
-
+      console.log(logoImg);
       if (logoImg && isVdabRecruiterLogoAlt(logoImg)) {
         vdabApplyLowPriorityVacancy(vacanciesListUlIndex, vacancyLi);
         continue;
@@ -81,9 +90,11 @@ function vdabPrioritiseVacancies(vacanciesListUlIndex) {
     }
 
     const recruiterNameStrong = vacancyLi
-      .getElementsByClassName("c-vacature-meta -location")[0]
+      .getElementsByClassName(recruiterNameClassname)[0]
       ?.getElementsByTagName("span")[0]
       ?.getElementsByTagName("strong")[0];
+
+    console.log(recruiterNameStrong);
 
     if (recruiterNameStrong) {
       if (isVdabRecruiterName(recruiterNameStrong)) {
@@ -193,9 +204,12 @@ function vdabHandle() {
   }, 500);
 }
 
+function isSuggestionsPage() {
+  return location.pathname === "/vindeenjob/prive/suggesties";
+}
+
 function setPageSettings() {
-  if (location.pathname === "/vindeenjob/prive/suggesties")
-    logoClassname = "c-vacature-meta__location";
+  if (isSuggestionsPage()) recruiterNameClassname = "c-vacature-meta__location";
 }
 
 function isVdabRecruiterName(recruiterNameStrong) {
@@ -211,7 +225,7 @@ function isVdabRecruiterLogoAlt(logoImg) {
 function vdabApplyLowPriorityVacancy(vacanciesListUlIndex, vacancyLi) {
   vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children[
     vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length - 1
-  ].after(vacancyLi);
+  ].after(isSuggestionsPage() ? vacancyLi.parentElement : vacancyLi);
 
   if (vdabRecruiterBlockMode == 0) {
     vacancyLi.style.opacity = "";
