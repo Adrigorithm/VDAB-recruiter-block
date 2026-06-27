@@ -29,22 +29,27 @@ document.addEventListener("DOMContentLoaded", vdabHandle());
 browser.runtime.onMessage.addListener((message) => {
   if (message.command === "changeBlockMode") {
     setVdabRecruiterBlockMode(message.data);
-    vdabPrioritiseVacancies();
+    vdabForcePrioritiseAllVacancies();
   } else if (message.command === "handleRecruiterName") {
     if (message.mode === "+") addVdabRecruiterName(message.data);
     else if (message.mode === "-") removeVdabRecruiterName(message.data);
-    vdabPrioritiseVacancies();
+    vdabForcePrioritiseAllVacancies();
   } else if (message.command === "handleRecruiterLogoAlt") {
     if (message.mode === "+") addVdabRecruiterLogoAlt(message.data);
     else if (message.mode === "-") removeVdabRecruiterLogoAlt(message.data);
-    vdabPrioritiseVacancies();
+    vdabForcePrioritiseAllVacancies();
   } else if (message.command === "hardReset") {
     hardReset();
-    vdabPrioritiseVacancies();
+    vdabForcePrioritiseAllVacancies();
   } else if (message.command === "removeData") {
     removeData();
   }
 });
+
+function vdabForcePrioritiseAllVacancies() {
+  for (let i = 0; i < vdabFetchLiveVacancyContainers().length; i++)
+    vdabPrioritiseVacancies(i);
+}
 
 function vdabPrioritiseVacancies(vacanciesListUlIndex) {
   if (vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length === 0) {
@@ -55,7 +60,6 @@ function vdabPrioritiseVacancies(vacanciesListUlIndex) {
   }
 
   let index = 0;
-  console.log(vdabFetchLiveVacanciesUl(vacanciesListUlIndex).children.length);
 
   for (
     let i = 0;
@@ -70,15 +74,13 @@ function vdabPrioritiseVacancies(vacanciesListUlIndex) {
 
     // When isSuggestionsPage is true, there is sometimes a 'ghost' vacancy element because vdab web - sorry - drupal developers suck.
     if (!vacancyLi) continue;
-    console.log(vacancyLi);
 
     // This Element does exist but doesn't have children when the vacancy doesn't have a logo.
     const logoDiv = vacancyLi.getElementsByClassName("c-vacature__logo")[0];
-    console.log(logoDiv);
 
     if (logoDiv && logoDiv.style.display !== "none") {
       const logoImg = logoDiv.getElementsByTagName("img")[0];
-      console.log(logoImg);
+
       if (logoImg && isVdabRecruiterLogoAlt(logoImg)) {
         vdabApplyLowPriorityVacancy(vacanciesListUlIndex, vacancyLi);
         continue;
@@ -93,8 +95,6 @@ function vdabPrioritiseVacancies(vacanciesListUlIndex) {
       .getElementsByClassName(recruiterNameClassname)[0]
       ?.getElementsByTagName("span")[0]
       ?.getElementsByTagName("strong")[0];
-
-    console.log(recruiterNameStrong);
 
     if (recruiterNameStrong) {
       if (isVdabRecruiterName(recruiterNameStrong)) {
