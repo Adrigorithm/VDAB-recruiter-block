@@ -181,12 +181,15 @@ function vdabHandle() {
     if (isBusy) return;
 
     isBusy = true;
+    console.log("busy: true");
 
     // Can be null when either no vacancy search happened or when the page wasn't loaded yet.
     vacancyUls = vdabFetchLiveVacancyContainers();
 
-    if (vacancyUls.length === 0) isBusy = false;
-    else {
+    if (vacancyUls.length === 0) {
+      isBusy = false;
+      console.log("busy: false");
+    } else {
       // The vacancies container exists but the chilren elements are still being loaded in, so it is "unstable" and we must wait for it to be done.
       vdabWaitForVacancyListStability((success) => {
         if (success) {
@@ -199,6 +202,7 @@ function vdabHandle() {
         }
 
         isBusy = false;
+        console.log("busy: false");
       });
     }
   }, 500);

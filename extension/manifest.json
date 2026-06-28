@@ -14,7 +14,7 @@
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "vdab_recruiter_block@mozilla.org",
+      "id": "vdab_recruiter_block@itsadri.com",
       "data_collection_permissions": {
         "required": ["none"]
       }
@@ -30,7 +30,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.vdab.be/vindeenjob/vacatures?*",
+        "https://www.vdab.be/vindeenjob/vacatures*",
         "https://www.vdab.be/vindeenjob/prive/suggesties*"
       ],
       "js": ["script.js"]
