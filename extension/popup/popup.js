@@ -223,7 +223,7 @@ function hideMessage() {
 }
 
 function displayMessage(backgroundColour, colour, text) {
-  message.innerHTML = text;
+  message.textContent = text;
 
   message.style.color = colour;
   message.style.backgroundColor = backgroundColour;

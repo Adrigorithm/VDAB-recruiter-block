@@ -22,9 +22,10 @@ Please note that I bear no ill will towards recruiters personally, but rather to
 
 ## 🚀 Planned Features
 
-* **Chromium:** It is possible this extension works just fine in chromium based browsers but I will test this for myself later since I use Firefox. 
+* **Chromium:** It is possible this extension works just fine in chromium based browsers but I will test this for myself later since I use Firefox (and mobile). 
 * **Automatically fetch recruitment agencies:** Manually editing a file can get tiring quickly. This may not be possible to automate but we'll have to see what is possible.
 * **UI:** Beautify the popup menu (I hate this)
+* **Images:** Not really a feature but I should include images here to show how everything works.
 
 ## ⚙️ How It Works
 
